@@ -7,27 +7,26 @@ from DefineHomePath import in_folder
 from AgrupadorArquivos import agrupador
 from Analisador import analisador
 
-#verifica modificações na pasta in
 ACTIONS = {
-  1 : "LIDO: ",
-  2 : "REMOVIDO: "
+      1 : "LIDO: "
 }
 
-FILE_LIST_DIRECTORY = 0x0001
-
-path_to_watch = in_folder
-hDir = win32file.CreateFile (
-  path_to_watch,
-  FILE_LIST_DIRECTORY,
-  win32con.FILE_SHARE_READ | win32con.FILE_SHARE_WRITE | win32con.FILE_SHARE_DELETE,
-  None,
-  win32con.OPEN_EXISTING,
-  win32con.FILE_FLAG_BACKUP_SEMANTICS,
-  None
-)
-
-while 1:
-  results = win32file.ReadDirectoryChangesW (
+#verifica modificações na pasta in
+def execute():   
+    FILE_LIST_DIRECTORY = 0x0001
+    
+    path_to_watch = in_folder
+    hDir = win32file.CreateFile (
+      path_to_watch,
+      FILE_LIST_DIRECTORY,
+      win32con.FILE_SHARE_READ | win32con.FILE_SHARE_WRITE | win32con.FILE_SHARE_DELETE,
+      None,
+      win32con.OPEN_EXISTING,
+      win32con.FILE_FLAG_BACKUP_SEMANTICS,
+      None
+    )
+    
+    results = win32file.ReadDirectoryChangesW (
     hDir,
     8192,
     True,
@@ -41,14 +40,19 @@ while 1:
     None
   )
   
-  #verifica cada arquivo se a extensão é .dat
-  for action, file in results:
-    if (action == 1 or action == 2) and re.search('\\.dat', file):
-            full_filename = os.path.join(path_to_watch, file)
-            print(ACTIONS.get (action, "Acao Desconhecida"), full_filename)
-            
-            #reune todos os arquivos em uma lista
-            verificarFile = agrupador(file)
-            
-            #analisa a lista e gera o relatório
-            analisador(verificarFile)
+    #verifica cada arquivo se a extensão é .dat
+    for action, file in results:
+        if (action == 0 or action == 1) and re.search('\\.dat', file):
+                full_filename = os.path.join(path_to_watch, file)
+                print(ACTIONS.get (action, "Acao Desconhecida"), full_filename)
+                
+                #reune todos os arquivos em uma lista
+                verificarFile = agrupador(file)
+                
+                #analisa a lista e gera o relatório
+                analisador(verificarFile)
+
+#enquanto verificar a pasta
+while 1:
+    execute()
+  
